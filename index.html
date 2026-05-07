@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -46,8 +45,7 @@
   .form-group input{width:100%;padding:12px;border:2px solid #ffd0cc;border-radius:10px;font-size:15px;box-sizing:border-box}
   .form-group input:focus{outline:none;border-color:#ff6f61}
   .send-btn{width:100%;padding:15px;background:#0088cc;color:#fff;border:none;border-radius:25px;font-size:16px;font-weight:bold;cursor:pointer;margin-top:10px}
-
-.send-btn:hover{background:#006699}
+  .send-btn:hover{background:#006699}
   .empty{text-align:center;color:#999;padding:30px}
 </style>
 </head>
@@ -146,10 +144,10 @@ function renderizarTudo(){
 function renderizarProdutos(){
   const area=document.getElementById('produtos');area.innerHTML='';
   dados.categorias[categoriaAtual].forEach((prod,idx)=>{
-    const inputId=qtd-${categoriaAtual.replace(/\s/g,'')}-${idx};
+    const inputId=`qtd-${categoriaAtual.replace(/\s/g,'')}-${idx}`;
     const btnId='btn-'+inputId;
     const card=document.createElement('div');card.className='card';
-    card.innerHTML=
+    card.innerHTML=`
       <img src="${prod.foto}" alt="${prod.nome}" onerror="this.src='https://via.placeholder.com/400x250/ff69b4/fff?text=${encodeURIComponent(prod.nome)}'">
       <div class="info">
         <h3>${prod.nome}</h3>
@@ -161,7 +159,7 @@ function renderizarProdutos(){
           <button onclick="alterarQtdInput('${inputId}',1)">+</button>
         </div>
         <button id="${btnId}" class="add-btn" onclick="adicionarAoCarrinho('${prod.nome.replace(/'/g,"\\'")}',${prod.preco},'${prod.precoLabel}','${inputId}')">🛒 Adicionar ao Pedido</button>
-      </div>;
+      </div>`;
     area.appendChild(card);
   });
 }
@@ -176,7 +174,7 @@ function renderizarCarrinho(){
     document.getElementById('cartTotal').textContent='';
     return;
   }
-  items.innerHTML=carrinho.map((it,i)=>
+  items.innerHTML=carrinho.map((it,i)=>`
     <div class="item-row">
       <div class="nome"><strong>${it.nome}</strong><br><small>${it.precoLabel}</small></div>
       <div class="ctrls">
@@ -185,9 +183,9 @@ function renderizarCarrinho(){
         <button onclick="mudarQtd(${i},1)">+</button>
         <button class="remove" onclick="removerItem(${i})">🗑</button>
       </div>
-    </div>).join('');
+    </div>`).join('');
   const total=carrinho.reduce((s,i)=>s+i.preco*i.qtd,0);
-  document.getElementById('cartTotal').textContent=Total: R$ ${total.toFixed(2).replace('.',',')};
+  document.getElementById('cartTotal').textContent=`Total: R$ ${total.toFixed(2).replace('.',',')}`;
 }
 
 function mudarQtd(i,d){carrinho[i].qtd+=d;if(carrinho[i].qtd<=0)carrinho.splice(i,1);salvarCarrinho();renderizarCarrinho();}
@@ -201,13 +199,13 @@ function enviarTelegram(){
   if(nome.length<2){alert('Informe seu nome.');return;}
   if(tel.replace(/\D/g,'').length<10){alert('Informe um telefone válido com DDD.');return;}
   const total=carrinho.reduce((s,i)=>s+i.preco*i.qtd,0);
-  let msg=🛒 *NOVO PEDIDO - Rose Doces e Salgados*\n\n;
-  msg+=👤 *Cliente:* ${nome}\n📞 *Telefone:* ${tel}\n\n;
-  msg+=📋 *Itens:*\n;
-  carrinho.forEach(i=>{msg+=• ${i.qtd}x ${i.nome} - ${i.precoLabel}\n;});
-  msg+=\n💰 *Total: R$ ${total.toFixed(2).replace('.',',')}*;
-  if(obs)msg+=\n\n📝 *Obs:* ${obs};
-  const url=https://t.me/${dados.telegramUser}?text=${encodeURIComponent(msg)};
+  let msg=`🛒 *NOVO PEDIDO - Rose Doces e Salgados*\n\n`;
+  msg+=`👤 *Cliente:* ${nome}\n📞 *Telefone:* ${tel}\n\n`;
+  msg+=`📋 *Itens:*\n`;
+  carrinho.forEach(i=>{msg+=`• ${i.qtd}x ${i.nome} - ${i.precoLabel}\n`;});
+  msg+=`\n💰 *Total: R$ ${total.toFixed(2).replace('.',',')}*`;
+  if(obs)msg+=`\n\n📝 *Obs:* ${obs}`;
+  const url=`https://t.me/${dados.telegramUser}?text=${encodeURIComponent(msg)}`;
   window.open(url,'_blank');
 }
 
