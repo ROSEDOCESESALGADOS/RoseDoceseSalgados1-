@@ -1,0 +1,218 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rose Doces e Salgados</title>
+<style>
+  body{font-family:Arial;background:linear-gradient(rgba(255,248,245,.9),rgba(255,248,245,.9));margin:0;padding-bottom:90px}
+  header{background:linear-gradient(135deg,#ff8f8f,#ff6f61);color:#fff;text-align:center;padding:40px 20px;box-shadow:0 4px 20px rgba(255,143,143,.3)}
+  .categorias{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:20px}
+  button{padding:12px 20px;border:none;border-radius:25px;background:#ff6f61;color:#fff;cursor:pointer;font-weight:bold;transition:all .3s;font-size:14px}
+  button:hover,button.active{background:#e85a4f;transform:scale(1.05)}
+  .produtos{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:25px;padding:30px;max-width:1400px;margin:auto}
+  .card{background:rgba(255,255,255,.95);border-radius:20px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.15);transition:transform .3s;display:flex;flex-direction:column}
+  .card:hover{transform:translateY(-10px)}
+  .card img{width:100%;height:220px;object-fit:cover}
+  .info{padding:20px;text-align:center;display:flex;flex-direction:column;gap:10px;flex:1}
+  .preco{color:#e85a4f;font-size:24px;font-weight:bold;margin:8px 0}
+  .qtd-wrap{display:flex;align-items:center;justify-content:center;gap:10px;margin:8px 0}
+  .qtd-wrap input{width:60px;text-align:center;padding:8px;border:2px solid #ffd0cc;border-radius:10px;font-size:16px}
+  .qtd-wrap button{padding:6px 12px;font-size:18px;line-height:1}
+  .add-btn{background:#ff6f61;color:#fff;padding:12px 18px;border-radius:25px;border:none;cursor:pointer;font-weight:bold;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+  .add-btn:hover{background:#e85a4f}
+  .topo-imagem{width:100%;height:300px;object-fit:cover;display:block}
+
+  /* Carrinho fixo */
+  .cart-fab{position:fixed;bottom:20px;right:20px;background:#25D366;color:#fff;border-radius:50%;width:64px;height:64px;display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 8px 20px rgba(0,0,0,.3);cursor:pointer;z-index:50;border:none}
+  .cart-badge{position:absolute;top:-6px;right:-6px;background:#e85a4f;color:#fff;border-radius:50%;min-width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;padding:0 6px}
+
+  /* Modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:100;padding:15px}
+  .modal-bg.show{display:flex}
+  .modal{background:#fff;border-radius:20px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;padding:25px;position:relative}
+  .modal h2{color:#e85a4f;margin-top:0}
+  .close-x{position:absolute;top:10px;right:14px;background:none;color:#999;font-size:28px;padding:0;width:auto}
+  .close-x:hover{background:none;color:#333;transform:none}
+  .item-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0;gap:10px;font-size:14px}
+  .item-row .nome{flex:1;text-align:left}
+  .item-row .ctrls{display:flex;align-items:center;gap:6px}
+  .item-row .ctrls button{padding:4px 10px;font-size:14px;background:#ff6f61}
+  .item-row .remove{background:#999;padding:4px 8px;border-radius:8px}
+  .total{font-size:20px;font-weight:bold;color:#e85a4f;text-align:right;margin:15px 0}
+  .form-group{margin:12px 0}
+  .form-group label{display:block;font-weight:bold;margin-bottom:5px;font-size:14px;text-align:left}
+  .form-group input{width:100%;padding:12px;border:2px solid #ffd0cc;border-radius:10px;font-size:15px;box-sizing:border-box}
+  .form-group input:focus{outline:none;border-color:#ff6f61}
+  .send-btn{width:100%;padding:15px;background:#0088cc;color:#fff;border:none;border-radius:25px;font-size:16px;font-weight:bold;cursor:pointer;margin-top:10px}
+
+.send-btn:hover{background:#006699}
+  .empty{text-align:center;color:#999;padding:30px}
+</style>
+</head>
+<body>
+<header>
+  <h1>ROSE DOCES E SALGADOS</h1>
+  <p>Doces e Salgados Caseiros Feitos com Amor</p>
+</header>
+
+<img src="https://dl.dropbox.com/scl/fi/e9vcv99wayzjq59qugxyl/rosesalg.jpg?rlkey=sr5ddznsp0gwligwirycrfhpi&st=1ttapcny&dl=1" alt="Capa Rose Doces e Salgados" class="topo-imagem">
+
+<div class="categorias" id="categorias"></div>
+<div class="produtos" id="produtos"></div>
+
+<button class="cart-fab" onclick="abrirCarrinho()">🛒<span class="cart-badge" id="cartBadge">0</span></button>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <button class="close-x" onclick="fecharCarrinho()">&times;</button>
+    <h2>🛒 Seu Pedido</h2>
+    <div id="cartItems"></div>
+    <div class="total" id="cartTotal"></div>
+    <div class="form-group">
+      <label>Nome completo *</label>
+      <input type="text" id="clienteNome" placeholder="Seu nome" required maxlength="80">
+    </div>
+    <div class="form-group">
+      <label>Telefone (com DDD) *</label>
+      <input type="tel" id="clienteTel" placeholder="(17) 99999-9999" required maxlength="20">
+    </div>
+    <div class="form-group">
+      <label>Observação (opcional)</label>
+      <input type="text" id="clienteObs" placeholder="Ex: entrega, recheio..." maxlength="200">
+    </div>
+    <button class="send-btn" onclick="enviarTelegram()">📨 Enviar Pedido pelo Telegram</button>
+  </div>
+</div>
+
+<script>
+const dados = {
+  // 👇 TROQUE pelo seu @usuario do Telegram (sem o @) ou link do grupo/canal
+  telegramUser: "sportlivepremium",
+  categorias: {
+    "Doces":[
+      {nome:"Brigadeiro Gourmet",preco:120,precoLabel:"R$ 120,00",descricao:"Brigadeiro cremoso com granulado",foto:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZvTs8jqAn8GOIwf6tdABAWFSqVtq_YSjwlysHrixuEg&s=10"},
+      {nome:"Bolo de Cenoura",preco:35,precoLabel:"R$ 35,00",descricao:"Bolo fofinho c/ cobertura de chocolate",foto:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDwnXeQO_IPoXPFJUYKFqlDF63xKuuKwg-glbSQt50Vg&s=10"},
+      {nome:"Pudim de Leite",preco:30,precoLabel:"R$ 30,00",descricao:"Pudim cremoso com caramelo caseiro",foto:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_0JDYfNDToXP5vFa0puqupU5J9uaXK3XeZleJANB8Sw&s=10"},
+      {nome:"Torta Holandesa",preco:65,precoLabel:"R$ 65,00",descricao:"Torta crocante de chocolate e caramelo",foto:"https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=250&fit=crop"}
+    ],
+    "Salgados":[
+      {nome:"Coxinha de Frango",preco:85,precoLabel:"R$ 85,00 (100un)",descricao:"Coxinha crocante recheada c/ frango",foto:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDpcZRvyvUcbOuaVlIkFGCqMnhtjwqJqIz78s3QIjAhQ&s=10"},
+      {nome:"Pastel de Carne",preco:85,precoLabel:"R$ 85,00 (100un)",descricao:"Pastel frito c/ carne moída temperada",foto:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzKugMeJ4tddIwDvsJF-IkRCgmq_vExpza6gaS8pLOkQ&s=10"},
+      {nome:"Empadadinha",preco:100,precoLabel:"R$ 100,00 (100un)",descricao:"Empada leve e saborosa",foto:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTlG1kBcaf7aeXfqvPaafhZWXKPe_u_nuVkVq2SzMqSwA&s=10"},
+      {nome:"Risole de Queijo",preco:85,precoLabel:"R$ 85,00 (100un)",descricao:"Risole recheado c/ muçarela derretida",foto:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSY20CPXaWDb1Bbp-hzK8tRJLrODvRW_PH07CsSaQOJbg&s=10"}
+    ],
+    "Combo Família":[
+      {nome:"Combo Salgado 20un",preco:85,precoLabel:"R$ 85,00",descricao:"Mix coxinhas, pastéis, empadas",foto:"https://images.unsplash.com/photo-1562440499-64e7f7a33733?w=400&h=250&fit=crop"},
+      {nome:"Combo Doce 12un",preco:65,precoLabel:"R$ 65,00",descricao:"Brigadeiros, brownies, cookies",foto:"https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=250&fit=crop"},
+      {nome:"Festa Kids 30un",preco:140,precoLabel:"R$ 140,00",descricao:"Salgados + docinhos infantis",foto:"https://images.unsplash.com/photo-1603482824006-f8b5f4e0ceae?w=400&h=250&fit=crop"}
+    ]
+  }
+};
+
+let categoriaAtual = Object.keys(dados.categorias)[0];
+let carrinho = JSON.parse(localStorage.getItem('rose_cart')||'[]');
+
+function salvarCarrinho(){localStorage.setItem('rose_cart',JSON.stringify(carrinho));atualizarBadge();}
+function atualizarBadge(){const t=carrinho.reduce((s,i)=>s+i.qtd,0);document.getElementById('cartBadge').textContent=t;}
+
+function adicionarAoCarrinho(nome,preco,precoLabel,inputId){
+  const qtd = Math.max(1, parseInt(document.getElementById(inputId).value)||1);
+  const ex = carrinho.find(i=>i.nome===nome);
+  if(ex){ex.qtd+=qtd;}else{carrinho.push({nome,preco,precoLabel,qtd});}
+  salvarCarrinho();
+  const btn=document.getElementById('btn-'+inputId);
+  const orig=btn.innerHTML;btn.innerHTML='✓ Adicionado!';btn.style.background='#25D366';
+  setTimeout(()=>{btn.innerHTML=orig;btn.style.background='';},1200);
+}
+
+function alterarQtdInput(inputId,delta){
+  const inp=document.getElementById(inputId);
+  inp.value=Math.max(1,(parseInt(inp.value)||1)+delta);
+}
+
+function renderizarTudo(){
+  const catArea=document.getElementById('categorias');catArea.innerHTML='';
+  Object.keys(dados.categorias).forEach(cat=>{
+    const btn=document.createElement('button');
+    btn.textContent=cat;btn.className=(categoriaAtual===cat)?'active':'';
+    btn.onclick=()=>{categoriaAtual=cat;renderizarTudo();};
+    catArea.appendChild(btn);
+  });
+  renderizarProdutos();
+}
+
+function renderizarProdutos(){
+  const area=document.getElementById('produtos');area.innerHTML='';
+  dados.categorias[categoriaAtual].forEach((prod,idx)=>{
+    const inputId=qtd-${categoriaAtual.replace(/\s/g,'')}-${idx};
+    const btnId='btn-'+inputId;
+    const card=document.createElement('div');card.className='card';
+    card.innerHTML=
+      <img src="${prod.foto}" alt="${prod.nome}" onerror="this.src='https://via.placeholder.com/400x250/ff69b4/fff?text=${encodeURIComponent(prod.nome)}'">
+      <div class="info">
+        <h3>${prod.nome}</h3>
+        <p>${prod.descricao}</p>
+        <div class="preco">${prod.precoLabel}</div>
+        <div class="qtd-wrap">
+          <button onclick="alterarQtdInput('${inputId}',-1)">−</button>
+          <input type="number" id="${inputId}" value="1" min="1" max="999">
+          <button onclick="alterarQtdInput('${inputId}',1)">+</button>
+        </div>
+        <button id="${btnId}" class="add-btn" onclick="adicionarAoCarrinho('${prod.nome.replace(/'/g,"\\'")}',${prod.preco},'${prod.precoLabel}','${inputId}')">🛒 Adicionar ao Pedido</button>
+      </div>;
+    area.appendChild(card);
+  });
+}
+
+function abrirCarrinho(){renderizarCarrinho();document.getElementById('modalBg').classList.add('show');}
+function fecharCarrinho(){document.getElementById('modalBg').classList.remove('show');}
+
+function renderizarCarrinho(){
+  const items=document.getElementById('cartItems');
+  if(carrinho.length===0){
+    items.innerHTML='<div class="empty">Seu carrinho está vazio.<br>Adicione produtos para fazer o pedido!</div>';
+    document.getElementById('cartTotal').textContent='';
+    return;
+  }
+  items.innerHTML=carrinho.map((it,i)=>
+    <div class="item-row">
+      <div class="nome"><strong>${it.nome}</strong><br><small>${it.precoLabel}</small></div>
+      <div class="ctrls">
+        <button onclick="mudarQtd(${i},-1)">−</button>
+        <span><b>${it.qtd}</b></span>
+        <button onclick="mudarQtd(${i},1)">+</button>
+        <button class="remove" onclick="removerItem(${i})">🗑</button>
+      </div>
+    </div>).join('');
+  const total=carrinho.reduce((s,i)=>s+i.preco*i.qtd,0);
+  document.getElementById('cartTotal').textContent=Total: R$ ${total.toFixed(2).replace('.',',')};
+}
+
+function mudarQtd(i,d){carrinho[i].qtd+=d;if(carrinho[i].qtd<=0)carrinho.splice(i,1);salvarCarrinho();renderizarCarrinho();}
+function removerItem(i){carrinho.splice(i,1);salvarCarrinho();renderizarCarrinho();}
+
+function enviarTelegram(){
+  if(carrinho.length===0){alert('Adicione pelo menos 1 produto.');return;}
+  const nome=document.getElementById('clienteNome').value.trim();
+  const tel=document.getElementById('clienteTel').value.trim();
+  const obs=document.getElementById('clienteObs').value.trim();
+  if(nome.length<2){alert('Informe seu nome.');return;}
+  if(tel.replace(/\D/g,'').length<10){alert('Informe um telefone válido com DDD.');return;}
+  const total=carrinho.reduce((s,i)=>s+i.preco*i.qtd,0);
+  let msg=🛒 *NOVO PEDIDO - Rose Doces e Salgados*\n\n;
+  msg+=👤 *Cliente:* ${nome}\n📞 *Telefone:* ${tel}\n\n;
+  msg+=📋 *Itens:*\n;
+  carrinho.forEach(i=>{msg+=• ${i.qtd}x ${i.nome} - ${i.precoLabel}\n;});
+  msg+=\n💰 *Total: R$ ${total.toFixed(2).replace('.',',')}*;
+  if(obs)msg+=\n\n📝 *Obs:* ${obs};
+  const url=https://t.me/${dados.telegramUser}?text=${encodeURIComponent(msg)};
+  window.open(url,'_blank');
+}
+
+renderizarTudo();
+atualizarBadge();
+</script>
+</body>
+</html>
